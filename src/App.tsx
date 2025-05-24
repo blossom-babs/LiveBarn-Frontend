@@ -2,7 +2,7 @@ import InfoLine from "./components/InfoLine";
 import useApi from "./hooks/useApi";
 import "./App.css";
 import { useEffect, useState } from "react";
-import { fadeColorByDistance, getBlendedColorForTile } from "./utils";
+import { fadeColorByDistance, getBlendedColorForTile, getColorDistance, type IcolorMatch } from "./utils";
 import SourceBar from "./components/SourceBar";
 
 const colorMap: [number, number, number][] = [
@@ -11,6 +11,8 @@ const colorMap: [number, number, number][] = [
   [0, 0, 255], //blue
 ];
 
+
+
 function App() {
   const { status, gameData, userMoves } = useApi();
 
@@ -18,10 +20,14 @@ function App() {
   const WIDTH: number = gameData ? gameData.width : 0;
   const HEIGHT: number = gameData ? gameData.height : 0;
 
-
+const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
 
 
   const [moveCount, setMoveCount] = useState(0);
+  const [availableMove, setAvailableMoves] = useState(0)
+
+  const [draggingColor, setDraggingColor] = useState<[number, number, number]>([0, 0, 0])
+
   const [topSources, setTopSources] = useState<
     Array<[number, number, number] | null>
   >([]);
@@ -37,14 +43,13 @@ function App() {
   const [tiles, setTiles] = useState<[number, number, number][][]>([]);
   const [contributions, setContributions] = useState<[number, number, number][][]>([]);
 
-  console.log({ bottomSources });
-
   useEffect(() => {
     if (gameData) {
       setTopSources(Array(gameData.width).fill(null));
       setLeftSources(Array(gameData.height).fill(null));
       setBottomSources(Array(gameData.width).fill(null));
       setRightSources(Array(gameData.height).fill(null));
+      setAvailableMoves(gameData.maxMoves)
       setTiles(
         Array.from({ length: gameData.height }, () =>
           Array.from({ length: gameData.width }, () => [0, 0, 0])
@@ -66,7 +71,7 @@ function App() {
     if (moveCount >= 3) return;
 
     const color = colorMap[moveCount];
-   // const newTiles = [...tiles];
+  
     const newContributions = contributions.map(row => row.map(c => [...c] as [number, number, number]));
 
 
@@ -142,6 +147,27 @@ function App() {
     setContributions(newContributions)
     setTiles(newTiles);
     setMoveCount((prev) => prev + 1);
+    setAvailableMoves(prev => prev - 1)
+
+    if(targetColor){
+ let closest: {x: number, y:number, color: [number, number, number],distance: number} | null = null
+      tiles.forEach((row, y) => {
+        row.forEach((color, x) => {
+            const dist = getColorDistance(color, targetColor as [number, number, number])
+
+            if(!closest || dist < closest.distance){
+              closest = {x, y, color, distance:dist}
+            }
+        })
+      })
+
+      setClosestMatch({
+        color: closest!.color,
+        distance: closest!.distance,
+        coords: [closest!.x, closest!.y],
+        percentageDiff: Math.floor((closest!.distance / 441.67) * 100 )
+      })
+    }
   }
 
   return (
@@ -152,7 +178,7 @@ function App() {
       {status === "loading" && <p>Loading...</p>}
 
       {gameData !== null && (
-        <InfoLine gameData={gameData} userMoves={userMoves} />
+        <InfoLine gameData={gameData} userMoves={userMoves} closestMatch={closestMatch} availableMove={availableMove}/>
       )}
 
       {/* TODO: TOP CIRCLE SOURCE: SOURCE_TOP */}
@@ -192,6 +218,8 @@ function App() {
           {tiles.map((row, rowIndex) =>
             row.map((color, colIndex) => (
               <div
+              draggable={availableMove > 0}
+              onDragStart={() => setDraggingColor(tiles[rowIndex][colIndex])}
                 key={`tile-${rowIndex}-${colIndex}`}
                 style={{
                   backgroundColor: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
