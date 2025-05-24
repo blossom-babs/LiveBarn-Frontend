@@ -2,7 +2,8 @@ import InfoLine from "./components/InfoLine";
 import useApi from "./hooks/useApi";
 import "./App.css";
 import { useEffect, useState } from "react";
-import { fadeColorByDistance } from "./utils";
+import { fadeColorByDistance, getBlendedColorForTile } from "./utils";
+import SourceBar from "./components/SourceBar";
 
 const colorMap: [number, number, number][] = [
   [255, 0, 0], //red
@@ -13,10 +14,12 @@ const colorMap: [number, number, number][] = [
 function App() {
   const { status, gameData, userMoves } = useApi();
 
+  const targetColor = gameData?.target
   const WIDTH: number = gameData ? gameData.width : 0;
   const HEIGHT: number = gameData ? gameData.height : 0;
 
-  console.log({ WIDTH, HEIGHT });
+
+
 
   const [moveCount, setMoveCount] = useState(0);
   const [topSources, setTopSources] = useState<
@@ -32,6 +35,7 @@ function App() {
     Array<[number, number, number] | null>
   >([]);
   const [tiles, setTiles] = useState<[number, number, number][][]>([]);
+  const [contributions, setContributions] = useState<[number, number, number][][]>([]);
 
   console.log({ bottomSources });
 
@@ -42,6 +46,11 @@ function App() {
       setBottomSources(Array(gameData.width).fill(null));
       setRightSources(Array(gameData.height).fill(null));
       setTiles(
+        Array.from({ length: gameData.height }, () =>
+          Array.from({ length: gameData.width }, () => [0, 0, 0])
+        )
+      );
+      setContributions(
         Array.from({ length: gameData.height }, () =>
           Array.from({ length: gameData.width }, () => [0, 0, 0])
         )
@@ -57,7 +66,9 @@ function App() {
     if (moveCount >= 3) return;
 
     const color = colorMap[moveCount];
-    const newTiles = [...tiles];
+   // const newTiles = [...tiles];
+    const newContributions = contributions.map(row => row.map(c => [...c] as [number, number, number]));
+
 
     if (dir === "col") {
       if (side === "top") {
@@ -68,10 +79,9 @@ function App() {
 
         for (let row = 0; row < HEIGHT; row++) {
           const distance = row + 1;
-          const faded = fadeColorByDistance(color, distance, HEIGHT)
-          const rowCopy = [...newTiles[row]];
-          rowCopy[index] = faded;
-          newTiles[row] = rowCopy;
+          const faded = fadeColorByDistance(color, distance, HEIGHT);
+        
+          newContributions[row][index] = newContributions[row][index].map((c, i) => c + faded[i]) as [number, number, number]
         }
       } else if (side === "bottom") {
         if (bottomSources[index]) return;
@@ -81,53 +91,56 @@ function App() {
 
         for (let row = 0; row < HEIGHT; row++) {
           const distance = row + 1;
-          const faded = fadeColorByDistance(color, distance, HEIGHT)
+          const faded = fadeColorByDistance(color, distance, HEIGHT);
           const targetRow = HEIGHT - 1 - row;
-          const rowCopy = [...newTiles[targetRow]];
-          rowCopy[index] = faded;
-          newTiles[targetRow] = rowCopy;
+          // const rowCopy = [...newTiles[targetRow]];
+          // rowCopy[index] = faded;
+          // newTiles[targetRow] = rowCopy;
+          newContributions[targetRow][index] = newContributions[targetRow][index].map((c, i) => c + faded[i]) as [number, number, number]
         }
       }
     }
 
-    if(dir === "row"){
-      if(side === "left"){
-        if(leftSources[index]) return
+    if (dir === "row") {
+      if (side === "left") {
+        if (leftSources[index]) return;
 
         const copySource = [...leftSources];
         copySource[index] = color;
         setLeftSources(copySource);
 
-        for(let col = 0; col < WIDTH; col++){
-          const distance = col + 1
-          const faded = fadeColorByDistance(color, distance, WIDTH)
+        for (let col = 0; col < WIDTH; col++) {
+          const distance = col + 1;
+          const faded = fadeColorByDistance(color, distance, WIDTH);
 
-          const rowCopy = [...newTiles[index]]
-          rowCopy[col] = faded
-          newTiles[index] = rowCopy
+          // const rowCopy = [...newTiles[index]];
+          // rowCopy[col] = faded;
+          // newTiles[index] = rowCopy;
 
+          newContributions[index][col] = newContributions[index][col].map((c, i) => c + faded[i]) as [number, number, number]
         }
-      }
-
-      else if(side === "right"){
-        if(rightSources[index]) return
+      } else if (side === "right") {
+        if (rightSources[index]) return;
         const copySource = [...rightSources];
         copySource[index] = color;
         setRightSources(copySource);
 
-        for(let col = 0; col < WIDTH; col++){
-          const distance = col + 1
-          const faded = fadeColorByDistance(color, distance, WIDTH)
-          const targetCol = WIDTH - 1 - col
-          const rowCopy = [...newTiles[index]]
-          rowCopy[targetCol] = faded
-          newTiles[index] = rowCopy
+        for (let col = 0; col < WIDTH; col++) {
+          const distance = col + 1;
+          const faded = fadeColorByDistance(color, distance, WIDTH);
+          const targetCol = WIDTH - 1 - col;
+
+          newContributions[index][targetCol] = newContributions[index][targetCol].map((c, i) => c + faded[i]) as [number, number, number]
+          // const rowCopy = [...newTiles[index]];
+          // rowCopy[targetCol] = faded;
+          // newTiles[index] = rowCopy;
         }
       }
     }
 
+    const newTiles = newContributions.map(row => row.map(getBlendedColorForTile))
+    setContributions(newContributions)
     setTiles(newTiles);
-
     setMoveCount((prev) => prev + 1);
   }
 
@@ -143,53 +156,31 @@ function App() {
       )}
 
       {/* TODO: TOP CIRCLE SOURCE: SOURCE_TOP */}
-      <div className="source-top flex-2">
-        {topSources.length === WIDTH &&
-          topSources.map((color, i) => {
-            return (
-              <div
-                key={`top-source-${i}`}
-                onClick={() => handleSourceClick(i, "col", "top")}
-                style={{
-                  cursor: moveCount >= 3 || color ? "not-allowed" : "pointer",
-                  width: "20px",
-                  height: "20px",
-                  borderRadius: "50%",
-                  backgroundColor: color
-                    ? `rgb(${color?.join(",")})`
-                    : "rgb(0,0,0)",
-                  margin: "1px",
-                }}
-              />
-            );
-          })}
-      </div>
+      {topSources.length && (
+        <SourceBar
+          sources={topSources}
+          size={WIDTH}
+          handleClick={handleSourceClick}
+          dir="col"
+          side="top"
+          moveCount={moveCount}
+          cls={["source-top", "flex-2"]}
+        />
+      )}
       {/* TODO... INTERACTIVE COMPONENT FOR PLAYING GAME */}
       <div className="flex">
-        {/* right grid */}
-
-        <div style={{ display: "grid" }}>
-          {leftSources.length === HEIGHT &&
-            leftSources.map((color, i) => {
-              console.log("left color", leftSources);
-              return (
-                <div
-                  key={`left-source-${i}`}
-                  onClick={() => handleSourceClick(i, "row", "left")}
-                  style={{
-                    cursor: moveCount >= 3 || color ? "not-allowed" : "pointer",
-                    width: "20px",
-                    height: "20px",
-                    borderRadius: "50%",
-                    backgroundColor: color
-                      ? `rgb(${color?.join(",")})`
-                      : "rgb(0,0,0)",
-                    margin: "1px",
-                  }}
-                />
-              );
-            })}
-        </div>
+        {/* Left Source */}
+        {leftSources.length && (
+          <SourceBar
+            sources={leftSources}
+            size={HEIGHT}
+            handleClick={handleSourceClick}
+            dir="row"
+            side="left"
+            moveCount={moveCount}
+            cls={["grid gap-2"]}
+          />
+        )}
 
         {/* center box: TILE */}
         <div
@@ -215,53 +206,31 @@ function App() {
 
         {/* left grid */}
 
-        <div style={{ display: "grid" }}>
-          {rightSources.length === HEIGHT &&
-            rightSources.map((color, i) => {
-              console.log("right color", rightSources);
-              return (
-                <div
-                  key={`right-source-${i}`}
-                  onClick={() => handleSourceClick(i, "row", "right")}
-                  style={{
-                    cursor: moveCount >= 3 || color ? "not-allowed" : "pointer",
-                    width: "20px",
-                    height: "20px",
-                    borderRadius: "50%",
-                    backgroundColor: color
-                      ? `rgb(${color?.join(",")})`
-                      : "rgb(0,0,0)",
-                    margin: "1px",
-                  }}
-                />
-              );
-            })}
-        </div>
+        {rightSources.length && (
+          <SourceBar
+            sources={rightSources}
+            size={HEIGHT}
+            handleClick={handleSourceClick}
+            dir="row"
+            side="right"
+            moveCount={moveCount}
+            cls={["grid gap-2"]}
+          />
+        )}
       </div>
 
       {/* TODO: BOTTOM BOX */}
-      <div className="source-top flex-2">
-        {bottomSources.length === WIDTH &&
-          bottomSources.map((color, i) => {
-            console.log("bottom color", bottomSources);
-            return (
-              <div
-                key={`bottom-source-${i}`}
-                onClick={() => handleSourceClick(i, "col", "bottom")}
-                style={{
-                  cursor: moveCount >= 3 || color ? "not-allowed" : "pointer",
-                  width: "20px",
-                  height: "20px",
-                  borderRadius: "50%",
-                  backgroundColor: color
-                    ? `rgb(${color?.join(",")})`
-                    : "rgb(0,0,0)",
-                  margin: "1px",
-                }}
-              />
-            );
-          })}
-      </div>
+      {bottomSources.length && (
+        <SourceBar
+          sources={bottomSources}
+          size={WIDTH}
+          handleClick={handleSourceClick}
+          dir="col"
+          side="bottom"
+          moveCount={moveCount}
+          cls={["source-top", "flex-2"]}
+        />
+      )}
     </>
   );
 }
