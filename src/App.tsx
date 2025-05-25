@@ -176,7 +176,7 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
         color: closest!.color,
         distance: closest!.distance,
         coords: [closest!.x, closest!.y],
-        percentageDiff: Math.floor((closest!.distance / 441.67) * 100 )
+        percentageDiff: parseFloat(((closest!.distance / 441.67) * 100).toFixed(2)),
       })
     }
   }
@@ -225,7 +225,7 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
              color: closest!.color,
              distance: closest!.distance,
              coords: [closest!.x, closest!.y],
-             percentageDiff: Math.floor((closest!.distance / 441.67) * 100 )
+             percentageDiff: parseFloat(((closest!.distance / 441.67) * 100).toFixed(2)),
            })
          }
 
