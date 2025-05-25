@@ -12,6 +12,7 @@ import {
 import SourceBar from "./components/SourceBar";
 import Modal from "./components/Modal";
 import { FiAlertTriangle } from "react-icons/fi";
+import { VscDebugRestart } from "react-icons/vsc";
 
 const colorMap: [number, number, number][] = [
   [255, 0, 0], //red
@@ -30,7 +31,7 @@ function App() {
 
   const [moveCount, setMoveCount] = useState(0);
   const [availableMove, setAvailableMoves] = useState(0);
-
+  const [restartGamePrompt, setRestartGamePrompt] = useState<boolean>(false);
   const [draggingColor, setDraggingColor] = useState<
     [number, number, number] | null
   >(null);
@@ -80,6 +81,10 @@ function App() {
     setBottomSources([]);
     setLeftSources([]);
     setRightSources([]);
+  };
+  const closeModal = () => {
+    setClosestMatch(null);
+    setRestartGamePrompt(true);
   };
 
   function handleSourceClick(
@@ -342,7 +347,7 @@ function App() {
             cls={["source-top", "flex-2"]}
           />
         )}
-      
+
         <div className="flex">
           {/* Left Source */}
           {leftSources.length && (
@@ -428,7 +433,23 @@ function App() {
         )}
       </section>
 
-      <Modal visible={USERLOST} onClose={() => resetGame()}>
+      {restartGamePrompt && (
+        <div className="restart-game">
+          <button
+          style={{ backgroundColor: `rgb(${gameData?.target.join(",")}` }}
+            onClick={() => {
+              refreshGameData(gameData?.userId || "");
+              resetGame();
+              setRestartGamePrompt(false);
+            }}
+          > <VscDebugRestart />
+
+            Restart Game
+          </button>
+        </div>
+      )}
+
+      <Modal visible={USERLOST} onClose={() => closeModal()}>
         <div className="modal-inner">
           <p> You failed!</p>
           <button
@@ -443,12 +464,12 @@ function App() {
         </div>
       </Modal>
 
-      <Modal visible={USERWIN} onClose={() => resetGame()}>
+      <Modal visible={USERWIN} onClose={() => {}}>
         <div className="modal-inner">
           <p> Congratulations!</p>
           <p> You found a match less than 10%</p>
           <button
-           style={{ backgroundColor: `rgb(${gameData?.target.join(",")}` }}
+            style={{ backgroundColor: `rgb(${gameData?.target.join(",")}` }}
             onClick={() => {
               refreshGameData(gameData?.userId || "");
               resetGame();

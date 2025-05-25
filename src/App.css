@@ -82,7 +82,12 @@ li{
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rem 0 2rem 0;
+  padding: 2rem 0;
+  gap: 12px;
+}
+.modal-inner p{
+  padding: 0;
+  margin: 0;
 }
 
 .modal-inner button{
@@ -126,8 +131,23 @@ li{
  color: red;
 }
 
+.restart-game{
+  margin-top: 2rem;
+}
+.restart-game button{
+  background-color: black;
+  border: none;
+  padding: 15px 25px;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap:3px;
+}
 @media screen and (min-width:400px){
   .small-screen-alert{
     display: none;
   }
 }
+
