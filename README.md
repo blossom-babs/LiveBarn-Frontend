@@ -1,54 +1,38 @@
-# React + TypeScript + Vite
+# Submission - RGB Alchemy
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A color-matching puzzle game built with React + TypeScript. Mix RGB colors by activating directional sources, blend them through fading logic, and match the target color in a limited number of moves.
 
-Currently, two official plugins are available:
+[Demo Video](https://www.loom.com/share/33e47093b46c45dc82014da7be8ea405?sid=c7e64616-652e-4c53-a943-863d2e15526b)
+![RGB Alchemy sample image](image.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Expanding the ESLint configuration
+## Overview
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+In **RGB Alchemy**, you must create a color that closely matches the target color using only three initial RGB sources and a limited number of moves.
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+1. **Click** up to 3 directional sources (top, bottom, left, right) to emit Red, Green, and Blue light.
+2. Each source emits a **fading gradient** of color across tiles.
+3. After the 3 moves, **drag and drop** any tile onto a source to update it with that tile's color.
+4. Tiles affected by multiple sources will **blend and normalize** the contributions.
+5. Win if your closest tile color is within **10%** of the target.
+
+## Tech Stack
+
+- **React + TypeScript**
+- **Vite** for lightning-fast dev
+- **Pure DOM drag-and-drop API**
+
+## To Run Locally:
+
+```bash
+git clone https://github.com/your-username/rgb-alchemy.git
+cd rgb-alchemy
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Runs on: `http://localhost:5173`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Kindly ensure server is set up before playing, mock server from instructions [here](https://hackmd.io/@gd_dVYF0STqPqMLWkxnd6A/Byrxur5At#API-docs).
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+[Progressive Todo](todo.md)

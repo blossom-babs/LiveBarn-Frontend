@@ -448,6 +448,7 @@ function App() {
           <p> Congratulations!</p>
           <p> You found a match less than 10%</p>
           <button
+           style={{ backgroundColor: `rgb(${gameData?.target.join(",")}` }}
             onClick={() => {
               refreshGameData(gameData?.userId || "");
               resetGame();
