@@ -2,9 +2,16 @@ import InfoLine from "./components/InfoLine";
 import useApi from "./hooks/useApi";
 import "./App.css";
 import { useEffect, useMemo, useState } from "react";
-import { computeTileContributions, fadeColorByDistance, getBlendedColorForTile, getColorDistance, type IcolorMatch } from "./utils";
+import {
+  computeTileContributions,
+  fadeColorByDistance,
+  getBlendedColorForTile,
+  getColorDistance,
+  type IcolorMatch,
+} from "./utils";
 import SourceBar from "./components/SourceBar";
 import Modal from "./components/Modal";
+import { FiAlertTriangle } from "react-icons/fi";
 
 const colorMap: [number, number, number][] = [
   [255, 0, 0], //red
@@ -12,22 +19,21 @@ const colorMap: [number, number, number][] = [
   [0, 0, 255], //blue
 ];
 
-
-
 function App() {
   const { status, gameData, userMoves, refreshGameData } = useApi();
 
-  const targetColor = gameData?.target
+  const targetColor = gameData?.target;
   const WIDTH: number = gameData ? gameData.width : 0;
   const HEIGHT: number = gameData ? gameData.height : 0;
 
-const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
-
+  const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null);
 
   const [moveCount, setMoveCount] = useState(0);
-  const [availableMove, setAvailableMoves] = useState(0)
+  const [availableMove, setAvailableMoves] = useState(0);
 
-  const [draggingColor, setDraggingColor] = useState<[number, number, number] | null>(null)
+  const [draggingColor, setDraggingColor] = useState<
+    [number, number, number] | null
+  >(null);
 
   const [topSources, setTopSources] = useState<
     Array<[number, number, number] | null>
@@ -42,7 +48,9 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
     Array<[number, number, number] | null>
   >([]);
   const [tiles, setTiles] = useState<[number, number, number][][]>([]);
-  const [contributions, setContributions] = useState<[number, number, number][][]>([]);
+  const [contributions, setContributions] = useState<
+    [number, number, number][][]
+  >([]);
 
   useEffect(() => {
     if (gameData) {
@@ -50,7 +58,7 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
       setLeftSources(Array(gameData.height).fill(null));
       setBottomSources(Array(gameData.width).fill(null));
       setRightSources(Array(gameData.height).fill(null));
-      setAvailableMoves(gameData.maxMoves)
+      setAvailableMoves(gameData.maxMoves);
       setTiles(
         Array.from({ length: gameData.height }, () =>
           Array.from({ length: gameData.width }, () => [0, 0, 0])
@@ -65,14 +73,14 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
   }, [gameData]);
 
   const resetGame = () => {
-    setClosestMatch(null)
-    setMoveCount(0)
-    setDraggingColor(null)
-    setTopSources([])
-    setBottomSources([])
-    setLeftSources([])
-    setRightSources([])
-  }
+    setClosestMatch(null);
+    setMoveCount(0);
+    setDraggingColor(null);
+    setTopSources([]);
+    setBottomSources([]);
+    setLeftSources([]);
+    setRightSources([]);
+  };
 
   function handleSourceClick(
     index: number,
@@ -82,9 +90,10 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
     if (moveCount >= 3) return;
 
     const color = colorMap[moveCount];
-  
-    const newContributions = contributions.map(row => row.map(c => [...c] as [number, number, number]));
 
+    const newContributions = contributions.map((row) =>
+      row.map((c) => [...c] as [number, number, number])
+    );
 
     if (dir === "col") {
       if (side === "top") {
@@ -96,8 +105,10 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
         for (let row = 0; row < HEIGHT; row++) {
           const distance = row + 1;
           const faded = fadeColorByDistance(color, distance, HEIGHT);
-        
-          newContributions[row][index] = newContributions[row][index].map((c, i) => c + faded[i]) as [number, number, number]
+
+          newContributions[row][index] = newContributions[row][index].map(
+            (c, i) => c + faded[i]
+          ) as [number, number, number];
         }
       } else if (side === "bottom") {
         if (bottomSources[index]) return;
@@ -112,7 +123,9 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
           // const rowCopy = [...newTiles[targetRow]];
           // rowCopy[index] = faded;
           // newTiles[targetRow] = rowCopy;
-          newContributions[targetRow][index] = newContributions[targetRow][index].map((c, i) => c + faded[i]) as [number, number, number]
+          newContributions[targetRow][index] = newContributions[targetRow][
+            index
+          ].map((c, i) => c + faded[i]) as [number, number, number];
         }
       }
     }
@@ -133,7 +146,9 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
           // rowCopy[col] = faded;
           // newTiles[index] = rowCopy;
 
-          newContributions[index][col] = newContributions[index][col].map((c, i) => c + faded[i]) as [number, number, number]
+          newContributions[index][col] = newContributions[index][col].map(
+            (c, i) => c + faded[i]
+          ) as [number, number, number];
         }
       } else if (side === "right") {
         if (rightSources[index]) return;
@@ -146,7 +161,9 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
           const faded = fadeColorByDistance(color, distance, WIDTH);
           const targetCol = WIDTH - 1 - col;
 
-          newContributions[index][targetCol] = newContributions[index][targetCol].map((c, i) => c + faded[i]) as [number, number, number]
+          newContributions[index][targetCol] = newContributions[index][
+            targetCol
+          ].map((c, i) => c + faded[i]) as [number, number, number];
           // const rowCopy = [...newTiles[index]];
           // rowCopy[targetCol] = faded;
           // newTiles[index] = rowCopy;
@@ -154,39 +171,51 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
       }
     }
 
-    const newTiles = newContributions.map(row => row.map(getBlendedColorForTile))
-    setContributions(newContributions)
+    const newTiles = newContributions.map((row) =>
+      row.map(getBlendedColorForTile)
+    );
+    setContributions(newContributions);
     setTiles(newTiles);
     setMoveCount((prev) => prev + 1);
-    setAvailableMoves(prev => prev - 1)
+    setAvailableMoves((prev) => prev - 1);
 
-    if(targetColor){
- let closest: {x: number, y:number, color: [number, number, number],distance: number} | null = null
+    if (targetColor) {
+      let closest: {
+        x: number;
+        y: number;
+        color: [number, number, number];
+        distance: number;
+      } | null = null;
       tiles.forEach((row, y) => {
         row.forEach((color, x) => {
-            const dist = getColorDistance(color, targetColor as [number, number, number])
+          const dist = getColorDistance(
+            color,
+            targetColor as [number, number, number]
+          );
 
-            if(!closest || dist < closest.distance){
-              closest = {x, y, color, distance:dist}
-            }
-        })
-      })
+          if (!closest || dist < closest.distance) {
+            closest = { x, y, color, distance: dist };
+          }
+        });
+      });
 
       setClosestMatch({
         color: closest!.color,
         distance: closest!.distance,
         coords: [closest!.x, closest!.y],
-        percentageDiff: parseFloat(((closest!.distance / 441.67) * 100).toFixed(2)),
-      })
+        percentageDiff: parseFloat(
+          ((closest!.distance / 441.67) * 100).toFixed(2)
+        ),
+      });
     }
   }
 
-  function handleSourceDrop(    index: number,
+  function handleSourceDrop(
+    index: number,
     color: [number, number, number],
     dir: "row" | "col",
-    side: "top" | "bottom" | "right" | "left",
-  ){
-
+    side: "top" | "bottom" | "right" | "left"
+  ) {
     let newTopSources = [...topSources];
     let newBottomSources = [...bottomSources];
     let newLeftSources = [...leftSources];
@@ -194,40 +223,49 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
 
     if (dir === "col") {
       if (side === "top") {
-        newTopSources[index] = color        
+        newTopSources[index] = color;
       } else if (side === "bottom") {
-        newBottomSources[index] = color
-      
+        newBottomSources[index] = color;
       }
     }
 
     if (dir === "row") {
       if (side === "left") {
-        newLeftSources[index] = color
+        newLeftSources[index] = color;
       } else if (side === "right") {
-        newRightSources[index] = color
+        newRightSources[index] = color;
       }
     }
 
-    if(targetColor){
-      let closest: {x: number, y:number, color: [number, number, number],distance: number} | null = null
-           tiles.forEach((row, y) => {
-             row.forEach((color, x) => {
-                 const dist = getColorDistance(color, targetColor as [number, number, number])
-     
-                 if(!closest || dist < closest.distance){
-                   closest = {x, y, color, distance:dist}
-                 }
-             })
-           })
-     
-           setClosestMatch({
-             color: closest!.color,
-             distance: closest!.distance,
-             coords: [closest!.x, closest!.y],
-             percentageDiff: parseFloat(((closest!.distance / 441.67) * 100).toFixed(2)),
-           })
-         }
+    if (targetColor) {
+      let closest: {
+        x: number;
+        y: number;
+        color: [number, number, number];
+        distance: number;
+      } | null = null;
+      tiles.forEach((row, y) => {
+        row.forEach((color, x) => {
+          const dist = getColorDistance(
+            color,
+            targetColor as [number, number, number]
+          );
+
+          if (!closest || dist < closest.distance) {
+            closest = { x, y, color, distance: dist };
+          }
+        });
+      });
+
+      setClosestMatch({
+        color: closest!.color,
+        distance: closest!.distance,
+        coords: [closest!.x, closest!.y],
+        percentageDiff: parseFloat(
+          ((closest!.distance / 441.67) * 100).toFixed(2)
+        ),
+      });
+    }
 
     const newContributions = computeTileContributions({
       topSources: newTopSources,
@@ -238,160 +276,187 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
       HEIGHT,
     });
 
-    const newTiles = newContributions.map(row => row.map(getBlendedColorForTile))
+    const newTiles = newContributions.map((row) =>
+      row.map(getBlendedColorForTile)
+    );
 
     setTopSources(newTopSources);
     setBottomSources(newBottomSources);
     setLeftSources(newLeftSources);
     setRightSources(newRightSources);
     setContributions(newContributions);
-    setTiles(newTiles)
-    setAvailableMoves(prev => prev - 1)
+    setTiles(newTiles);
+    setAvailableMoves((prev) => prev - 1);
   }
 
   const USERLOST = useMemo(() => {
     if (!closestMatch) return false;
     return availableMove <= 0 && closestMatch.percentageDiff >= 10;
   }, [closestMatch, availableMove]);
-  
+
   const USERWIN = useMemo(() => {
     if (!closestMatch) return false;
     return availableMove >= 0 && closestMatch.percentageDiff < 10;
   }, [closestMatch, availableMove]);
-  
+
   return (
     <>
       <h1 className="heading">RGB Alchemy</h1>
-
-
-      <Modal visible={USERLOST} onClose={() => resetGame()}>
-        <p> You failed!</p>
-        <button onClick={() => {refreshGameData(gameData?.userId || '')
-        resetGame()
-        }}>Try again</button>
-      </Modal>
-      
-     
-
-
-      <Modal visible={USERWIN} onClose={() => resetGame()}>
-        <p> Congratulations!</p>
-        <p> You found a match less than 10%</p>
-        <button onClick={() => {
-          refreshGameData(gameData?.userId || '')
-          resetGame()
-          }}>Play again</button>
-      </Modal>
-      
-  
 
       {/* TODO.... YOU CAN USE AN ACTUAL LOADING SCREEN */}
       {status === "loading" && <p>Loading...</p>}
 
       {gameData !== null && (
-        <InfoLine gameData={gameData} userMoves={userMoves} closestMatch={closestMatch} availableMove={availableMove}/>
-      )}
-
-<section className="game-board">
-      {/* TODO: TOP CIRCLE SOURCE: SOURCE_TOP */}
-      {topSources.length && (
-        <SourceBar
-        handleDrop={handleSourceDrop}
-        draggingColor={draggingColor}
-        availableMove={availableMove}
-        sources={topSources}
-        setDraggingColor={setDraggingColor}
-          size={WIDTH}
-          handleClick={handleSourceClick}
-          dir="col"
-          side="top"
-          moveCount={moveCount}
-          cls={["source-top", "flex-2"]}
+        <InfoLine
+          gameData={gameData}
+          userMoves={userMoves}
+          closestMatch={closestMatch}
+          availableMove={availableMove}
         />
       )}
-      {/* TODO... INTERACTIVE COMPONENT FOR PLAYING GAME */}
-      <div className="flex">
-        {/* Left Source */}
-        {leftSources.length && (
+
+      <div className="small-screen-alert">
+        <div>
+          <FiAlertTriangle />
+        </div>
+        <p>
+          Game not supported on screen size. For best experience, Please try on
+          larger screen.
+        </p>
+      </div>
+
+      <section className="game-board">
+        {/* SOURCE - TOP */}
+        {topSources.length && (
           <SourceBar
-          handleDrop={handleSourceDrop}
-          draggingColor={draggingColor}
-          availableMove={availableMove}
-          setDraggingColor={setDraggingColor}
-            sources={leftSources}
-            size={HEIGHT}
+            handleDrop={handleSourceDrop}
+            draggingColor={draggingColor}
+            availableMove={availableMove}
+            sources={topSources}
+            setDraggingColor={setDraggingColor}
+            size={WIDTH}
             handleClick={handleSourceClick}
-            dir="row"
-            side="left"
+            dir="col"
+            side="top"
             moveCount={moveCount}
-            cls={["grid gap-2"]}
+            cls={["source-top", "flex-2"]}
           />
         )}
+      
+        <div className="flex">
+          {/* Left Source */}
+          {leftSources.length && (
+            <SourceBar
+              handleDrop={handleSourceDrop}
+              draggingColor={draggingColor}
+              availableMove={availableMove}
+              setDraggingColor={setDraggingColor}
+              sources={leftSources}
+              size={HEIGHT}
+              handleClick={handleSourceClick}
+              dir="row"
+              side="left"
+              moveCount={moveCount}
+              cls={["grid gap-2"]}
+            />
+          )}
 
-        {/* center box: TILE */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${WIDTH}, 1fr)`,
-          }}
-        >
-          {tiles.map((row, rowIndex) =>
-            row.map((color, colIndex) => {
-              const isDraggable = availableMove > 0 && moveCount >= 3
-              return (
-                <div
-                draggable={isDraggable}
-                onDragStart={() => setDraggingColor(tiles[rowIndex][colIndex])}
-                  key={`tile-${rowIndex}-${colIndex}`}
-                  style={{
-                    cursor: isDraggable ? 'pointer' : "not-allowed",
-                    backgroundColor: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
-                    width: "20px",
-                    height: "20px",
-                    margin: "2px",
-                  }}
-                />
-              )
-            })
+          {/* center box: TILE */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${WIDTH}, 1fr)`,
+            }}
+          >
+            {tiles.map((row, rowIndex) =>
+              row.map((color, colIndex) => {
+                const isDraggable = availableMove > 0 && moveCount >= 3;
+                return (
+                  <div
+                    draggable={isDraggable}
+                    onDragStart={() =>
+                      setDraggingColor(tiles[rowIndex][colIndex])
+                    }
+                    key={`tile-${rowIndex}-${colIndex}`}
+                    style={{
+                      cursor: isDraggable ? "pointer" : "not-allowed",
+                      backgroundColor: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
+                      width: "20px",
+                      height: "20px",
+                      margin: "2px",
+                    }}
+                  />
+                );
+              })
+            )}
+          </div>
+
+          {/* left grid */}
+
+          {rightSources.length && (
+            <SourceBar
+              handleDrop={handleSourceDrop}
+              draggingColor={draggingColor}
+              availableMove={availableMove}
+              setDraggingColor={setDraggingColor}
+              sources={rightSources}
+              size={HEIGHT}
+              handleClick={handleSourceClick}
+              dir="row"
+              side="right"
+              moveCount={moveCount}
+              cls={["grid gap-2"]}
+            />
           )}
         </div>
 
-        {/* left grid */}
-
-        {rightSources.length && (
+        {/* SOURCE- BOTTOM */}
+        {bottomSources.length && (
           <SourceBar
-          handleDrop={handleSourceDrop}
-          draggingColor={draggingColor}
-          availableMove={availableMove}
-          setDraggingColor={setDraggingColor}
-            sources={rightSources}
-            size={HEIGHT}
+            handleDrop={handleSourceDrop}
+            draggingColor={draggingColor}
+            availableMove={availableMove}
+            setDraggingColor={setDraggingColor}
+            sources={bottomSources}
+            size={WIDTH}
             handleClick={handleSourceClick}
-            dir="row"
-            side="right"
+            dir="col"
+            side="bottom"
             moveCount={moveCount}
-            cls={["grid gap-2"]}
+            cls={["source-top", "flex-2"]}
           />
         )}
-      </div>
+      </section>
 
-      {/* TODO: BOTTOM BOX */}
-      {bottomSources.length && (
-        <SourceBar
-        handleDrop={handleSourceDrop}
-        draggingColor={draggingColor}
-        availableMove={availableMove}
-        setDraggingColor={setDraggingColor}
-          sources={bottomSources}
-          size={WIDTH}
-          handleClick={handleSourceClick}
-          dir="col"
-          side="bottom"
-          moveCount={moveCount}
-          cls={["source-top", "flex-2"]}
-        />
-      )}
-</section>
+      <Modal visible={USERLOST} onClose={() => resetGame()}>
+        <div className="modal-inner">
+          <p> You failed!</p>
+          <button
+            style={{ backgroundColor: `rgb(${gameData?.target.join(",")}` }}
+            onClick={() => {
+              refreshGameData(gameData?.userId || "");
+              resetGame();
+            }}
+          >
+            Try again
+          </button>
+        </div>
+      </Modal>
+
+      <Modal visible={USERWIN} onClose={() => resetGame()}>
+        <div className="modal-inner">
+          <p> Congratulations!</p>
+          <p> You found a match less than 10%</p>
+          <button
+            onClick={() => {
+              refreshGameData(gameData?.userId || "");
+              resetGame();
+            }}
+          >
+            Play again
+          </button>
+        </div>
+      </Modal>
     </>
   );
 }

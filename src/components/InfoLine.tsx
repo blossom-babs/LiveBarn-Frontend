@@ -9,7 +9,7 @@ interface InfoLineInterface{
     availableMove: number
 }
 
-const InfoLine:React.FC<InfoLineInterface> = ({gameData, userMoves, closestMatch, availableMove}) => {
+const InfoLine:React.FC<InfoLineInterface> = ({gameData, closestMatch, availableMove}) => {
   return (
         <ul>
           <li>

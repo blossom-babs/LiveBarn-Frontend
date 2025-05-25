@@ -7,7 +7,6 @@ const SourceBar = ({
     dir,
     side,
     cls,
-    availableMove,
     handleDrop,
     draggingColor,
     setDraggingColor
@@ -46,6 +45,7 @@ const SourceBar = ({
             onClick={() => handleClick(i, dir, side)}
             style={{
               cursor: moveCount >= 3 || color ? "not-allowed" : "pointer",
+              flex: "0 0 auto",
               width: "20px",
               height: "20px",
               borderRadius: "50%",
