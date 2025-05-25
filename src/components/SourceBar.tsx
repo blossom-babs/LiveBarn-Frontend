@@ -6,7 +6,11 @@ const SourceBar = ({
     moveCount,
     dir,
     side,
-    cls
+    cls,
+    availableMove,
+    handleDrop,
+    draggingColor,
+    setDraggingColor
 }: {
     sources:  Array<[number, number, number] | null>,
     size: number,
@@ -14,7 +18,11 @@ const SourceBar = ({
     side: "top" | "bottom" | "left" | "right"
     handleClick: (i: number, dir: "row" | "col", side: "top" | "bottom" | "left" | "right") => void,
     moveCount: number,
-    cls: string[]
+    cls: string[],
+    availableMove: number,
+    handleDrop: (i: number,  draggingColor: [number, number, number],  dir: "row" | "col", side: "top" | "bottom" | "left" | "right") => void,
+    draggingColor: [number, number, number] | null,
+    setDraggingColor: (_: [number, number, number] | null) => void
 }) => {
   return (
     <div className={`${cls && cls.join(' ')}`}>
@@ -22,6 +30,18 @@ const SourceBar = ({
       sources.map((color, i) => {
         return (
           <div
+          onDragOver={e => {
+           
+                e.preventDefault()
+            
+          }}
+        onDrop={() => {
+            if(moveCount >= 3 && draggingColor){
+                handleDrop(i, draggingColor, dir, side)
+            }
+            setDraggingColor(null);
+            
+        }}
             key={`top-source-${i}`}
             onClick={() => handleClick(i, dir, side)}
             style={{

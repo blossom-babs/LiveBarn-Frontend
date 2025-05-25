@@ -1,12 +1,15 @@
 
-import type { IGameData } from '../utils'
+import { IoTriangleOutline } from 'react-icons/io5';
+import type { IcolorMatch, IGameData } from '../utils'
 
 interface InfoLineInterface{
     gameData: IGameData;
     userMoves: number,
+    closestMatch: IcolorMatch | null
+    availableMove: number
 }
 
-const InfoLine:React.FC<InfoLineInterface> = ({gameData, userMoves}) => {
+const InfoLine:React.FC<InfoLineInterface> = ({gameData, userMoves, closestMatch, availableMove}) => {
   return (
         <ul>
           <li>
@@ -15,9 +18,10 @@ const InfoLine:React.FC<InfoLineInterface> = ({gameData, userMoves}) => {
           </li>
           <li>
             <span>Moves Left: </span>
-            <span>{userMoves}</span>
+            <span>{availableMove}</span>
           </li>
-          <li className="flex">
+          <li>
+            <div className="flex-5">
             <span>Target Color: </span>
             <span
               style={{
@@ -28,18 +32,28 @@ const InfoLine:React.FC<InfoLineInterface> = ({gameData, userMoves}) => {
               }}
             >
             </span>
+            </div>
           </li>
-          <li className="flex">
+          <li >
+            <div className="flex-5">        
             <span>Closest Color: </span>
-            <span
-              style={{
-                width: "20px",
-                height: "20px",
-                display: "block",
-                // backgroundColor: `rgb(${gameData.target.join(",")})`,
-              }}
-            >
-            </span>
+          {closestMatch &&
+          <>  
+          <span
+            style={{
+              width: "20px",
+              height: "20px",
+              display: "block",
+              backgroundColor: `rgb(${closestMatch.color.join(",")})`,
+            }}
+          >
+          </span>
+          <span className='flex'> <IoTriangleOutline />
+
+          {closestMatch.percentageDiff} %</span>
+          </>
+        }
+            </div>
           </li>
         </ul>
 

@@ -25,13 +25,31 @@ const useApi = () => {
         }
       }
     
+      async function refreshGameData(userId: string){
+        try {
+
+            const response = await fetch(`http://localhost:9876/init/user/${userId}`, {});
+            const data = await response.json();
+            if (data) {
+              setGameData(data);
+              setUserMoves(data.maxMoves);
+              setStatus(STATUS.IDLE);
+            } else {
+              setStatus(STATUS.ERROR);
+            }
+          } catch (error) {
+            console.log(error);
+            setStatus(STATUS.ERROR);
+            setStatus(STATUS.IDLE);
+          }
+      }
       // TODO: PREVENT API FROM BEING CALLED EVERYTIME I REFRESH
       useEffect(() => {
         fetchGameData();
       }, []);
 
   return {
-    status, gameData, userMoves
+    status, gameData, userMoves, refreshGameData
   }
 }
 

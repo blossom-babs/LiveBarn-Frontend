@@ -15,7 +15,7 @@ const colorMap: [number, number, number][] = [
 
 
 function App() {
-  const { status, gameData, userMoves } = useApi();
+  const { status, gameData, userMoves, refreshGameData } = useApi();
 
   const targetColor = gameData?.target
   const WIDTH: number = gameData ? gameData.width : 0;
@@ -63,6 +63,16 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
       );
     }
   }, [gameData]);
+
+  const resetGame = () => {
+    setClosestMatch(null)
+    setMoveCount(0)
+    setDraggingColor(null)
+    setTopSources([])
+    setBottomSources([])
+    setLeftSources([])
+    setRightSources([])
+  }
 
   function handleSourceClick(
     index: number,
@@ -246,26 +256,31 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
   
   const USERWIN = useMemo(() => {
     if (!closestMatch) return false;
-    return availableMove > 0 && closestMatch.percentageDiff < 10;
+    return availableMove >= 0 && closestMatch.percentageDiff < 10;
   }, [closestMatch, availableMove]);
   
   return (
     <>
-      <h1>RGB Alchemy</h1>
+      <h1 className="heading">RGB Alchemy</h1>
 
 
-      <Modal visible={USERLOST} onClose={() => {}}>
+      <Modal visible={USERLOST} onClose={() => resetGame()}>
         <p> You failed!</p>
-        <button>Try again</button>
+        <button onClick={() => {refreshGameData(gameData?.userId || '')
+        resetGame()
+        }}>Try again</button>
       </Modal>
       
      
 
 
-      <Modal visible={USERWIN} onClose={() => {}}>
+      <Modal visible={USERWIN} onClose={() => resetGame()}>
         <p> Congratulations!</p>
         <p> You found a match less than 10%</p>
-        <button>Play again</button>
+        <button onClick={() => {
+          refreshGameData(gameData?.userId || '')
+          resetGame()
+          }}>Play again</button>
       </Modal>
       
   
@@ -277,6 +292,7 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
         <InfoLine gameData={gameData} userMoves={userMoves} closestMatch={closestMatch} availableMove={availableMove}/>
       )}
 
+<section className="game-board">
       {/* TODO: TOP CIRCLE SOURCE: SOURCE_TOP */}
       {topSources.length && (
         <SourceBar
@@ -375,6 +391,7 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
           cls={["source-top", "flex-2"]}
         />
       )}
+</section>
     </>
   );
 }
