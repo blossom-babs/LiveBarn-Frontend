@@ -80,3 +80,12 @@ li{
   margin-top: 3rem;
 }
 
+.modal-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-backdrop.hide {
+  opacity: 0;
+  pointer-events: none;
+}
