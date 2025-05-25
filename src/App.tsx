@@ -1,9 +1,10 @@
 import InfoLine from "./components/InfoLine";
 import useApi from "./hooks/useApi";
 import "./App.css";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { computeTileContributions, fadeColorByDistance, getBlendedColorForTile, getColorDistance, type IcolorMatch } from "./utils";
 import SourceBar from "./components/SourceBar";
+import Modal from "./components/Modal";
 
 const colorMap: [number, number, number][] = [
   [255, 0, 0], //red
@@ -238,17 +239,36 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
     setAvailableMoves(prev => prev - 1)
   }
 
+  const USERLOST = useMemo(() => {
+    if (!closestMatch) return false;
+    return availableMove <= 0 && closestMatch.percentageDiff >= 10;
+  }, [closestMatch, availableMove]);
+  
+  const USERWIN = useMemo(() => {
+    if (!closestMatch) return false;
+    return availableMove > 0 && closestMatch.percentageDiff < 10;
+  }, [closestMatch, availableMove]);
+  
   return (
     <>
       <h1>RGB Alchemy</h1>
 
-      {availableMove === 0 && 
-      <div>
+
+      <Modal visible={USERLOST} onClose={() => {}}>
         <p> You failed!</p>
         <button>Try again</button>
-      </div>
+      </Modal>
       
-      }
+     
+
+
+      <Modal visible={USERWIN} onClose={() => {}}>
+        <p> Congratulations!</p>
+        <p> You found a match less than 10%</p>
+        <button>Play again</button>
+      </Modal>
+      
+  
 
       {/* TODO.... YOU CAN USE AN ACTUAL LOADING SCREEN */}
       {status === "loading" && <p>Loading...</p>}
