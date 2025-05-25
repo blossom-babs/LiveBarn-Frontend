@@ -2,7 +2,7 @@ import InfoLine from "./components/InfoLine";
 import useApi from "./hooks/useApi";
 import "./App.css";
 import { useEffect, useState } from "react";
-import { fadeColorByDistance, getBlendedColorForTile, getColorDistance, type IcolorMatch } from "./utils";
+import { computeTileContributions, fadeColorByDistance, getBlendedColorForTile, getColorDistance, type IcolorMatch } from "./utils";
 import SourceBar from "./components/SourceBar";
 
 const colorMap: [number, number, number][] = [
@@ -26,7 +26,7 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
   const [moveCount, setMoveCount] = useState(0);
   const [availableMove, setAvailableMoves] = useState(0)
 
-  const [draggingColor, setDraggingColor] = useState<[number, number, number]>([0, 0, 0])
+  const [draggingColor, setDraggingColor] = useState<[number, number, number] | null>(null)
 
   const [topSources, setTopSources] = useState<
     Array<[number, number, number] | null>
@@ -170,9 +170,85 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
     }
   }
 
+  function handleSourceDrop(    index: number,
+    color: [number, number, number],
+    dir: "row" | "col",
+    side: "top" | "bottom" | "right" | "left",
+  ){
+
+    let newTopSources = [...topSources];
+    let newBottomSources = [...bottomSources];
+    let newLeftSources = [...leftSources];
+    let newRightSources = [...rightSources];
+
+    if (dir === "col") {
+      if (side === "top") {
+        newTopSources[index] = color        
+      } else if (side === "bottom") {
+        newBottomSources[index] = color
+      
+      }
+    }
+
+    if (dir === "row") {
+      if (side === "left") {
+        newLeftSources[index] = color
+      } else if (side === "right") {
+        newRightSources[index] = color
+      }
+    }
+
+    if(targetColor){
+      let closest: {x: number, y:number, color: [number, number, number],distance: number} | null = null
+           tiles.forEach((row, y) => {
+             row.forEach((color, x) => {
+                 const dist = getColorDistance(color, targetColor as [number, number, number])
+     
+                 if(!closest || dist < closest.distance){
+                   closest = {x, y, color, distance:dist}
+                 }
+             })
+           })
+     
+           setClosestMatch({
+             color: closest!.color,
+             distance: closest!.distance,
+             coords: [closest!.x, closest!.y],
+             percentageDiff: Math.floor((closest!.distance / 441.67) * 100 )
+           })
+         }
+
+    const newContributions = computeTileContributions({
+      topSources: newTopSources,
+      bottomSources: newBottomSources,
+      leftSources: newLeftSources,
+      rightSources: newRightSources,
+      WIDTH,
+      HEIGHT,
+    });
+
+    const newTiles = newContributions.map(row => row.map(getBlendedColorForTile))
+
+    setTopSources(newTopSources);
+    setBottomSources(newBottomSources);
+    setLeftSources(newLeftSources);
+    setRightSources(newRightSources);
+    setContributions(newContributions);
+    setTiles(newTiles)
+    setAvailableMoves(prev => prev - 1)
+  }
+
   return (
     <>
       <h1>RGB Alchemy</h1>
+
+      {availableMove === 0 && 
+      <div>
+        <p> You failed!</p>
+        <button>Try again</button>
+      </div>
+      
+      }
 
       {/* TODO.... YOU CAN USE AN ACTUAL LOADING SCREEN */}
       {status === "loading" && <p>Loading...</p>}
@@ -184,7 +260,11 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
       {/* TODO: TOP CIRCLE SOURCE: SOURCE_TOP */}
       {topSources.length && (
         <SourceBar
-          sources={topSources}
+        handleDrop={handleSourceDrop}
+        draggingColor={draggingColor}
+        availableMove={availableMove}
+        sources={topSources}
+        setDraggingColor={setDraggingColor}
           size={WIDTH}
           handleClick={handleSourceClick}
           dir="col"
@@ -198,6 +278,10 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
         {/* Left Source */}
         {leftSources.length && (
           <SourceBar
+          handleDrop={handleSourceDrop}
+          draggingColor={draggingColor}
+          availableMove={availableMove}
+          setDraggingColor={setDraggingColor}
             sources={leftSources}
             size={HEIGHT}
             handleClick={handleSourceClick}
@@ -216,19 +300,23 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
           }}
         >
           {tiles.map((row, rowIndex) =>
-            row.map((color, colIndex) => (
-              <div
-              draggable={availableMove > 0}
-              onDragStart={() => setDraggingColor(tiles[rowIndex][colIndex])}
-                key={`tile-${rowIndex}-${colIndex}`}
-                style={{
-                  backgroundColor: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
-                  width: "20px",
-                  height: "20px",
-                  margin: "2px",
-                }}
-              />
-            ))
+            row.map((color, colIndex) => {
+              const isDraggable = availableMove > 0 && moveCount >= 3
+              return (
+                <div
+                draggable={isDraggable}
+                onDragStart={() => setDraggingColor(tiles[rowIndex][colIndex])}
+                  key={`tile-${rowIndex}-${colIndex}`}
+                  style={{
+                    cursor: isDraggable ? 'pointer' : "not-allowed",
+                    backgroundColor: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
+                    width: "20px",
+                    height: "20px",
+                    margin: "2px",
+                  }}
+                />
+              )
+            })
           )}
         </div>
 
@@ -236,6 +324,10 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
 
         {rightSources.length && (
           <SourceBar
+          handleDrop={handleSourceDrop}
+          draggingColor={draggingColor}
+          availableMove={availableMove}
+          setDraggingColor={setDraggingColor}
             sources={rightSources}
             size={HEIGHT}
             handleClick={handleSourceClick}
@@ -250,6 +342,10 @@ const [closestMatch, setClosestMatch] = useState<IcolorMatch | null>(null)
       {/* TODO: BOTTOM BOX */}
       {bottomSources.length && (
         <SourceBar
+        handleDrop={handleSourceDrop}
+        draggingColor={draggingColor}
+        availableMove={availableMove}
+        setDraggingColor={setDraggingColor}
           sources={bottomSources}
           size={WIDTH}
           handleClick={handleSourceClick}
