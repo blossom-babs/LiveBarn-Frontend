@@ -25,7 +25,7 @@ In **RGB Alchemy**, you must create a color that closely matches the target colo
 ## To Run Locally:
 
 ```bash
-git clone https://github.com/your-username/rgb-alchemy.git
+git clone https://github.com/blossom-babs/LiveBarn-Frontend.git
 cd rgb-alchemy
 npm install
 npm run dev
