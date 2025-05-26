@@ -21,7 +21,7 @@ const useApi = () => {
         } catch (error) {
           console.log(error);
           setStatus(STATUS.ERROR);
-          setStatus(STATUS.IDLE);
+      
         }
       }
     
@@ -40,10 +40,8 @@ const useApi = () => {
           } catch (error) {
             console.log(error);
             setStatus(STATUS.ERROR);
-            setStatus(STATUS.IDLE);
           }
       }
-      // TODO: PREVENT API FROM BEING CALLED EVERYTIME I REFRESH
       useEffect(() => {
         fetchGameData();
       }, []);

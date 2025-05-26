@@ -146,7 +146,7 @@ li{
   gap:3px;
 }
 @media screen and (min-width:400px){
-  .small-screen-alert{
+  .hidden-lg{
     display: none;
   }
 }

@@ -3,6 +3,7 @@ import useApi from "./hooks/useApi";
 import "./App.css";
 import { useEffect, useMemo, useState } from "react";
 import {
+  applyDirContribution,
   computeTileContributions,
   fadeColorByDistance,
   getBlendedColorForTile,
@@ -14,6 +15,7 @@ import Modal from "./components/Modal";
 import { FiAlertTriangle } from "react-icons/fi";
 import { VscDebugRestart } from "react-icons/vsc";
 
+// Initial Color for source
 const colorMap: [number, number, number][] = [
   [255, 0, 0], //red
   [0, 255, 0], //green
@@ -120,6 +122,10 @@ function App() {
         const copyBtmSources = [...bottomSources];
         copyBtmSources[index] = color;
         setBottomSources(copyBtmSources);
+
+       
+        applyDirContribution(newContributions, color, HEIGHT, i => ({ row: i, col: index }));
+
 
         for (let row = 0; row < HEIGHT; row++) {
           const distance = row + 1;
@@ -308,8 +314,20 @@ function App() {
     <>
       <h1 className="heading">RGB Alchemy</h1>
 
-      {/* TODO.... YOU CAN USE AN ACTUAL LOADING SCREEN */}
+      {/* TODO.... ACTUAL LOADING GIF */}
       {status === "loading" && <p>Loading...</p>}
+
+
+      {status === "error" && 
+       <div className="small-screen-alert">
+       <div>
+         <FiAlertTriangle />
+       </div>
+       <p>
+         An error has occured. Please connect to the server or try some other time.
+       </p>
+     </div>
+      }
 
       {gameData !== null && (
         <InfoLine
@@ -320,7 +338,7 @@ function App() {
         />
       )}
 
-      <div className="small-screen-alert">
+      <div className="small-screen-alert hidden-lg">
         <div>
           <FiAlertTriangle />
         </div>
@@ -330,6 +348,7 @@ function App() {
         </p>
       </div>
 
+{(status !== 'error' || gameData) &&
       <section className="game-board">
         {/* SOURCE - TOP */}
         {topSources.length && (
@@ -432,6 +451,7 @@ function App() {
           />
         )}
       </section>
+}
 
       {restartGamePrompt && (
         <div className="restart-game">

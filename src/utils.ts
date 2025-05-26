@@ -119,3 +119,20 @@ export function computeTileContributions({
     return contributions;
   }
   
+type RGB = [number, number, number]
+
+  export function applyDirContribution(
+    matrix: RGB[][],
+    srcColor: RGB,
+    length: number,
+    iterate: (i: number) => {row: number; col: number}
+  ) {
+    for (let i = 0; i < length; i++) {
+      const { row, col } = iterate(i);
+      const faded = fadeColorByDistance(srcColor, i + 1, length);
+      matrix[row][col] = matrix[row][col].map(
+        (c, k) => c + faded[k]
+      ) as RGB;
+    }
+  }
+  
