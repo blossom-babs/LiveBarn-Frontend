@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   applyDirContribution,
   computeTileContributions,
-  fadeColorByDistance,
   getBlendedColorForTile,
   getColorDistance,
   type IcolorMatch,
@@ -108,15 +107,7 @@ function App() {
         const copyTopSources = [...topSources];
         copyTopSources[index] = color;
         setTopSources(copyTopSources);
-
-        for (let row = 0; row < HEIGHT; row++) {
-          const distance = row + 1;
-          const faded = fadeColorByDistance(color, distance, HEIGHT);
-
-          newContributions[row][index] = newContributions[row][index].map(
-            (c, i) => c + faded[i]
-          ) as [number, number, number];
-        }
+        applyDirContribution(newContributions, color, HEIGHT, i => ({ row: i, col: index }));
       } else if (side === "bottom") {
         if (bottomSources[index]) return;
         const copyBtmSources = [...bottomSources];
@@ -124,20 +115,7 @@ function App() {
         setBottomSources(copyBtmSources);
 
        
-        applyDirContribution(newContributions, color, HEIGHT, i => ({ row: i, col: index }));
-
-
-        for (let row = 0; row < HEIGHT; row++) {
-          const distance = row + 1;
-          const faded = fadeColorByDistance(color, distance, HEIGHT);
-          const targetRow = HEIGHT - 1 - row;
-          // const rowCopy = [...newTiles[targetRow]];
-          // rowCopy[index] = faded;
-          // newTiles[targetRow] = rowCopy;
-          newContributions[targetRow][index] = newContributions[targetRow][
-            index
-          ].map((c, i) => c + faded[i]) as [number, number, number];
-        }
+        applyDirContribution(newContributions, color, HEIGHT, i => ({ row: HEIGHT - 1 - i, col: index }));
       }
     }
 
@@ -148,37 +126,16 @@ function App() {
         const copySource = [...leftSources];
         copySource[index] = color;
         setLeftSources(copySource);
+        applyDirContribution(newContributions, color, WIDTH, i => ({ row: index, col: i }));
 
-        for (let col = 0; col < WIDTH; col++) {
-          const distance = col + 1;
-          const faded = fadeColorByDistance(color, distance, WIDTH);
-
-          // const rowCopy = [...newTiles[index]];
-          // rowCopy[col] = faded;
-          // newTiles[index] = rowCopy;
-
-          newContributions[index][col] = newContributions[index][col].map(
-            (c, i) => c + faded[i]
-          ) as [number, number, number];
-        }
       } else if (side === "right") {
         if (rightSources[index]) return;
         const copySource = [...rightSources];
         copySource[index] = color;
         setRightSources(copySource);
 
-        for (let col = 0; col < WIDTH; col++) {
-          const distance = col + 1;
-          const faded = fadeColorByDistance(color, distance, WIDTH);
-          const targetCol = WIDTH - 1 - col;
+        applyDirContribution(newContributions, color, WIDTH, i => ({ row: index, col: WIDTH - 1 - i }));
 
-          newContributions[index][targetCol] = newContributions[index][
-            targetCol
-          ].map((c, i) => c + faded[i]) as [number, number, number];
-          // const rowCopy = [...newTiles[index]];
-          // rowCopy[targetCol] = faded;
-          // newTiles[index] = rowCopy;
-        }
       }
     }
 
