@@ -16,6 +16,27 @@ In **RGB Alchemy**, Create a color that closely matches the target color using o
 4. Tiles affected by multiple sources will **blend and normalize** the contributions.
 5. Win if your closest tile color is less than **10%** of the target.
 
+```markdown
+## Project Structure & Descriptions
+
+├── public/
+│   └── rgb.svg                  # SVG icon
+├── src/
+│   ├── __tests__
+│   │   └── utils.test.ts      # Unit tests for utility functions        
+│   ├── components/
+│   │   ├── InfoLine.tsx         # Displays game metadata (target color, moves left, etc.)
+│   │   ├── Modal.tsx            # Reusable modal component for game over or restart prompt
+│   │   └── SourceBar.tsx        # Renders clickable or droppable source circles (top, bottom, sides)
+│   ├── hooks/
+│   │   └── useApi.tsx           # Custom hook to fetch and refresh game data from backend
+│   ├── App.css                  # Global styles and utility 
+│   ├── App.tsx                  # Main game component and UI logic (tiles, sources, modal handling)
+│   └── main.tsx                 # Vite entry point, renders <App />
+
+```
+
+
 ## Tech Stack
 
 - **React + TypeScript**
