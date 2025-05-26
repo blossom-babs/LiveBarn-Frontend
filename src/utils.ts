@@ -20,6 +20,7 @@ export interface IcolorMatch{
     percentageDiff:number,
   }
 
+  // Returns an RGB color faded based on distance from the source
 export function fadeColorByDistance(
     baseColor: [number, number, number],
     distance: number,
@@ -30,6 +31,7 @@ export function fadeColorByDistance(
   }
   
 
+  // Normalizes color to ensure its brightest component is 255
 export function getBlendedColorForTile([r, g, b]:[number, number, number]):[number, number, number]{
     const maxChannel = Math.max(r, g, b, 255)
     const factor = 255 / maxChannel
@@ -41,6 +43,7 @@ export function getBlendedColorForTile([r, g, b]:[number, number, number]):[numb
     ]
 }
 
+// Calculates Euclidean distance between two RGB colors
 export function getColorDistance(
     colorA: [number, number, number],
     colorB: [number, number, number]
@@ -55,6 +58,7 @@ export function getColorDistance(
     )
 }
 
+// Computes color contributions from all 4 directions
 export function computeTileContributions({
     topSources,
     bottomSources,
@@ -121,6 +125,7 @@ export function computeTileContributions({
   
 type RGB = [number, number, number]
 
+// Reusable abstraction to apply directional contributions in a generic way
   export function applyDirContribution(
     matrix: RGB[][],
     srcColor: RGB,

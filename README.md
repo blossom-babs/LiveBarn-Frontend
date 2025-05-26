@@ -1,25 +1,25 @@
 # Submission - RGB Alchemy
 
-A color-matching puzzle game built with React + TypeScript. Mix RGB colors by activating directional sources, blend them through fading logic, and match the target color in a limited number of moves.
-
 [Demo Video](https://www.loom.com/share/33e47093b46c45dc82014da7be8ea405?sid=c7e64616-652e-4c53-a943-863d2e15526b)
 ![RGB Alchemy sample image](image.png)
 
+Color-matching puzzle game built with React + TypeScript.
 
-## Overview
 
-In **RGB Alchemy**, you must create a color that closely matches the target color using only three initial RGB sources and a limited number of moves.
+## Summary
 
-1. **Click** up to 3 directional sources (top, bottom, left, right) to emit Red, Green, and Blue light.
+In **RGB Alchemy**, Create a color that closely matches the target color using only three initial RGB sources and a limited number of moves.
+
+1. **Click** up to 3 directional sources (top, bottom, left, right) to emit Red, Green, and Blue light. _(the circle are called sources)_
 2. Each source emits a **fading gradient** of color across tiles.
-3. After the 3 moves, **drag and drop** any tile onto a source to update it with that tile's color.
+3. After the 3 moves, **drag and drop** any tile(square box) onto a source to update it with that tile's color.
 4. Tiles affected by multiple sources will **blend and normalize** the contributions.
-5. Win if your closest tile color is within **10%** of the target.
+5. Win if your closest tile color is less than **10%** of the target.
 
 ## Tech Stack
 
 - **React + TypeScript**
-- **Vite** for lightning-fast dev
+- **Vite** 
 - **Pure DOM drag-and-drop API**
 
 ## To Run Locally:
